@@ -1,0 +1,141 @@
+# This is sample file. Please replace the dummy values to actual values in order for it work
+# Default values for helm-charts.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+LANDSCAPE:
+  useWildcardCertificate: false
+  commonName: 'k8s.bksrv.sf.sapcloud.io'
+
+KUBERNETES:
+  imagePullSecrets: my-secret
+  gardener:
+    class: garden
+    cert: managed
+  ingressClass: nginx
+  ingressName: common-ingress
+  secret: {}
+  node:
+    selector:
+      static: '[{"matchExpressions":[{"key":"lattice.sapcloud.io/group","operator":"In","values":["bksvc-1"]}]}]'
+    tolerance:
+      static: '[{"key":"lattice.sapcloud.io/group","value":"bksvc-1","operator":"Equal","effect":"NoSchedule"}]'
+
+api:
+  appName: dasboard-api
+  serviceAccountName: bksvc-dashboard-api-account
+  image: 
+    repository: dasboard-api
+    tag: '1.0.0'
+    pullPolicy: IfNotPresent
+  env:
+    - name: "NODE_ENV"
+      value: "production"
+    - name: "POSTGRES_USER"
+      value: "sb"
+    - name: "POSTGRES_PASSWORD"
+      value: "Toor1234"
+    - name: "POSTGRES_DB"
+      value: "database"
+  port: 3000
+  resource:
+    memory:
+      limit: '1Gi'
+      requests: '1Gi'
+    cpu:
+      limit: '700m'
+      requests: '700m'
+  ingress:
+    hostname: bksvc-dashboard-api
+    name: dashboard-api-ingress
+    tlsSecret: dashboard-api-tls-secret
+  service:
+    name: backing-services-dashboard-api
+    port: 8080
+    type: ClusterIP
+  backoffLimit: 0
+  initialDelaySeconds: 5
+  maxReplicas: 3
+  maxSkew: 3
+  maxSurge: 1
+  maxUnavailable: 0
+  minReadySeconds: 30
+  minReplicas: 1
+  periodSeconds: 5
+
+ui:
+  appName: dasboard-ui
+  serviceAccountName: bksvc-dashboard-ui-account
+  image:
+    repository: dashboard-ui
+    tag: '1.0.0'
+    pullPolicy: IfNotPresent
+  env:
+    - name: "NODE_ENV"
+      value: "production"
+  ingress:
+    hostname: bksvc-dashboard-ui
+    name: dashboard-ui-ingress
+    tlsSecret: dashboard-ui-tls-secret
+  service:
+    name: backing-services-dashboard-ui
+    port: 8081
+    type: ClusterIP
+  port: 3001
+  resource:
+    memory:
+      limit: '1Gi'
+      requests: '1Gi'
+    cpu:
+      limit: '700m'
+      requests: '700m'
+  backoffLimit: 0
+  initialDelaySeconds: 5
+  maxReplicas: 3
+  maxSkew: 3
+  maxSurge: 1
+  maxUnavailable: 0
+  minReadySeconds: 30
+  minReplicas: 1
+  periodSeconds: 5
+
+sbss:
+  appName: sbss-postgresql
+  envSecret: sbss-secret
+  envConfig: sbss-config
+  vcapServices: '{ "postgresql": [ { "credentials": { "dbname": "postgres", "hostname": "postgresql-db.shared-services.svc.cluster.local", "password": "topsekret", "port": "5432", "uri": "postgres://postgres:postgres@postgresql-db.shared-services.svc.cluster.local:5432/postgres", "username": "postgres" }, "label": "postgresql", "name": "sbss-container", "plan": "v9.4-container", "provider": null, "syslog_drain_url": null, "tags": ["postgresql", "relational"], "volume_mounts": [] } ], "user-provided": [ { "credentials": { "tag": "sbss-config", "restricted-dbuser-name": "sb", "restricted-dbuser-password": "Toor1234" }, "label": "user-provided", "name": "sbss-config2", "syslog_drain_url": "", "tags": [], "volume_mounts": [] } ] }'
+  isTask: true
+  image:
+    repository: sbss
+    tag: 'dev'
+    pullPolicy: IfNotPresent
+  restartPolicy: Never
+  resource:
+    memory:
+      limit: '200Mi'
+      requests: '200Mi'
+    cpu:
+      limit: '700m'
+      requests: '700m'
+  backoffLimit: 0
+
+podAnnotations: {}
+podSecurityContext: {}
+securityContext:
+  {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+nodeSelector: {}
+tolerations: []
+affinity: {}
